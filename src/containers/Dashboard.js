@@ -4,6 +4,7 @@ import BigBilledIcon from "../assets/svg/big_billed.js";
 import { ROUTES_PATH } from "../constants/routes.js";
 import USERS_TEST from "../constants/usersTest.js";
 import Logout from "./Logout.js";
+
 export const filteredBills = (data, status) => {
   return data && data.length
     ? data.filter(bill => {
@@ -95,15 +96,6 @@ export default class {
   };
 
   handleEditTicket(e, bill, bills) {
-    // debugger;
-    // console.log(this.counter);
-    // SUPPRIMER VARIABLE NUMBER APRES SEANCE MENTORAT
-    // LA FONCTION SE LANCE PLUSIEURS FOIS A CHAQUE CLICK SUR UNE CARD, UNE FOIS POUR CHAQUE LISTE DEPLOYEE
-
-    number++;
-    console.log(number);
-
-    this.counter = 0;
     if (this.counter === undefined || this.id !== bill.id) this.counter = 0;
     if (this.id === undefined || this.id !== bill.id) this.id = bill.id;
     if (this.counter % 2 === 0) {
@@ -113,8 +105,8 @@ export default class {
       $(`#open-bill${bill.id}`).css({ background: "#2A2B35" });
       $(".dashboard-right-container div").html(DashboardFormUI(bill));
       $(".vertical-navbar").css({ height: "150vh" });
-      this.counter--;
-      console.log("counter if " + this.counter);
+
+      this.counter++;
     } else {
       $(`#open-bill${bill.id}`).css({ background: "#0D5AE5" });
 
@@ -123,7 +115,6 @@ export default class {
       `);
       $(".vertical-navbar").css({ height: "120vh" });
       this.counter++;
-      console.log("counter else " + this.counter);
     }
     $("#icon-eye-d").click(this.handleClickIconEye);
     $("#btn-accept-bill").click(e => this.handleAcceptSubmit(e, bill));
@@ -166,6 +157,8 @@ export default class {
     }
 
     bills.forEach(bill => {
+      $(`#open-bill${bill.id}`).off("click");
+
       $(`#open-bill${bill.id}`).click(e =>
         this.handleEditTicket(e, bill, bills)
       );

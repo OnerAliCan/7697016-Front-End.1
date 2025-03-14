@@ -10,6 +10,7 @@ export default class {
     const buttonNewBill = document.querySelector(
       `button[data-testid="btn-new-bill"]`
     );
+    this.bills = [];
 
     if (buttonNewBill)
       buttonNewBill.addEventListener("click", this.handleClickNewBill);
@@ -29,7 +30,6 @@ export default class {
 
   handleClickIconEye = icon => {
     const billUrl = icon.getAttribute("data-bill-url");
-    console.log(icon);
 
     const imgWidth = Math.floor($("#modaleFile").width() * 0.5);
     $("#modaleFile")
@@ -46,17 +46,25 @@ export default class {
         .bills()
         .list()
         .then(snapshot => {
+          console.log("snapshot =", snapshot[0].date);
           const bills = snapshot.map(doc => {
             try {
-              return {
+              let result = {
                 ...doc,
-                date: formatDate(doc.date),
+                // date: doc.date,
+                // date: formatDate(doc.date),
+
                 status: formatStatus(doc.status),
               };
+
+              // result = {
+              //   date: sortedDates,
+              // };
+
+              return result;
             } catch (e) {
               // if for some reason, corrupted data was introduced, we manage here failing formatDate function
               // log the error and return unformatted date in that case
-              console.log(e, "for", doc);
               return {
                 ...doc,
                 date: doc.date,
@@ -64,9 +72,12 @@ export default class {
               };
             }
           });
-
-          bills.sort((a, b) => new Date(a.date) - new Date(b.date));
-
+          console.log(bills);
+          bills.sort((a, b) => new Date(b.date) - new Date(a.date));
+          for (let i = 0; i < bills.length; i++) {
+            const bill = bills[i];
+            bill.date = formatDate(bill.date);
+          }
           return bills;
         });
     }
