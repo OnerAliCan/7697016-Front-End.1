@@ -17,9 +17,8 @@ export const filteredBills = (data, status) => {
           /* istanbul ignore next */
           // in prod environment
           const userEmail = JSON.parse(localStorage.getItem("user")).email;
-          selectCondition =
-            bill.status === status &&
-            ![...USERS_TEST, userEmail].includes(bill.email);
+          /* istanbul ignore next */
+          selectCondition = bill.status === status && ![...USERS_TEST, userEmail].includes(bill.email);
         }
 
         return selectCondition;
@@ -29,17 +28,11 @@ export const filteredBills = (data, status) => {
 
 export const card = bill => {
   const firstAndLastNames = bill.email.split("@")[0];
-  const firstName = firstAndLastNames.includes(".")
-    ? firstAndLastNames.split(".")[0]
-    : "";
-  const lastName = firstAndLastNames.includes(".")
-    ? firstAndLastNames.split(".")[1]
-    : firstAndLastNames;
+  const firstName = firstAndLastNames.includes(".") ? firstAndLastNames.split(".")[0] : "";
+  const lastName = firstAndLastNames.includes(".") ? firstAndLastNames.split(".")[1] : firstAndLastNames;
 
   return `
-    <div class='bill-card' id='open-bill${bill.id}' data-testid='open-bill${
-    bill.id
-  }'>
+    <div class='bill-card' id='open-bill${bill.id}' data-testid='open-bill${bill.id}'>
       <div class='bill-card-name-container'>
         <div class='bill-card-name'> ${firstName} ${lastName} </div>
         <span class='bill-card-grey'> ... </span>
@@ -88,11 +81,8 @@ export default class {
     const imgWidth = Math.floor($("#modaleFileAdmin1").width() * 0.8);
     $("#modaleFileAdmin1")
       .find(".modal-body")
-      .html(
-        `<div style='text-align: center;'><img width=${imgWidth} src=${billUrl} alt="Bill"/></div>`
-      );
-    if (typeof $("#modaleFileAdmin1").modal === "function")
-      $("#modaleFileAdmin1").modal("show");
+      .html(`<div style='text-align: center;'><img width=${imgWidth} src=${billUrl} alt="Bill"/></div>`);
+    if (typeof $("#modaleFileAdmin1").modal === "function") $("#modaleFileAdmin1").modal("show");
   };
 
   handleEditTicket(e, bill, bills) {
@@ -146,9 +136,7 @@ export default class {
     if (this.index === undefined || this.index !== index) this.index = index;
     if (this.counter % 2 === 0) {
       $(`#arrow-icon${this.index}`).css({ transform: "rotate(0deg)" });
-      $(`#status-bills-container${this.index}`).html(
-        cards(filteredBills(bills, getStatus(this.index)))
-      );
+      $(`#status-bills-container${this.index}`).html(cards(filteredBills(bills, getStatus(this.index))));
       this.counter++;
     } else {
       $(`#arrow-icon${this.index}`).css({ transform: "rotate(90deg)" });
@@ -159,9 +147,7 @@ export default class {
     bills.forEach(bill => {
       $(`#open-bill${bill.id}`).off("click");
 
-      $(`#open-bill${bill.id}`).click(e =>
-        this.handleEditTicket(e, bill, bills)
-      );
+      $(`#open-bill${bill.id}`).click(e => this.handleEditTicket(e, bill, bills));
     });
 
     return bills;

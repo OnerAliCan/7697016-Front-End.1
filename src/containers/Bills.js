@@ -7,19 +7,21 @@ export default class {
     this.document = document;
     this.onNavigate = onNavigate;
     this.store = store;
-    const buttonNewBill = document.querySelector(
-      `button[data-testid="btn-new-bill"]`
-    );
+    const buttonNewBill = document.querySelector(`button[data-testid="btn-new-bill"]`);
     this.bills = [];
 
-    if (buttonNewBill)
-      buttonNewBill.addEventListener("click", this.handleClickNewBill);
+    if (buttonNewBill) buttonNewBill.addEventListener("click", this.handleClickNewBill);
     const iconEye = document.querySelectorAll(`div[data-testid="icon-eye"]`);
 
-    if (iconEye)
+    if (iconEye.length > 0)
       iconEye.forEach(icon => {
+        console.log(iconEye.length);
+
         icon.addEventListener("click", () => this.handleClickIconEye(icon));
       });
+    else {
+      console.log("error");
+    }
 
     new Logout({ document, localStorage, onNavigate });
   }
@@ -46,7 +48,7 @@ export default class {
         .bills()
         .list()
         .then(snapshot => {
-          console.log("snapshot =", snapshot[0].date);
+          // console.log("snapshot =", snapshot[0].date);
           const bills = snapshot.map(doc => {
             try {
               let result = {
@@ -72,7 +74,7 @@ export default class {
               };
             }
           });
-          console.log(bills);
+          // console.log(bills);
           bills.sort((a, b) => new Date(b.date) - new Date(a.date));
           for (let i = 0; i < bills.length; i++) {
             const bill = bills[i];
