@@ -34,6 +34,7 @@ export default class NewBill {
     if (!validExtensions.includes(fileNameExtension)) {
       console.log("Extension de fichier non valide :", fileNameExtension);
       alert("Veuillez télécharger un fichier avec une extension valide (jpeg, jpg, png).");
+      this.document.querySelector(`input[data-testid="file"]`).value = "";
       return;
     } else {
       console.log("extension de fichier valide :", fileNameExtension);
@@ -77,7 +78,7 @@ export default class NewBill {
       this.updateBill(bill);
       this.onNavigate(ROUTES_PATH["Bills"]);
     } else {
-      alert("Veuillez télécharger un fichier avec une extension valide (jpeg, jpg, png).");
+      alert("Veuillez télécharger un fichier.");
       return;
     }
   };
