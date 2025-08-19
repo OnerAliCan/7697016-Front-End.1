@@ -15,7 +15,6 @@ export default class {
 
     if (iconEye.length > 0)
       iconEye.forEach(icon => {
-        console.log(iconEye.length);
 
         icon.addEventListener("click", () => this.handleClickIconEye(icon));
       });
@@ -48,7 +47,6 @@ export default class {
         .bills()
         .list()
         .then(snapshot => {
-          // console.log("snapshot =", snapshot[0].date);
           const bills = snapshot.map(doc => {
             try {
               let result = {
@@ -74,7 +72,6 @@ export default class {
               };
             }
           });
-          // console.log(bills);
           bills.sort((a, b) => new Date(b.date) - new Date(a.date));
           for (let i = 0; i < bills.length; i++) {
             const bill = bills[i];

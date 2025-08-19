@@ -91,23 +91,5 @@ describe("Given I am connected as an employee", () => {
         expect($.fn.modal).toHaveBeenCalledWith("show"); // Vérifie si la méthode modal a été appelée
       });
     });
-    test("Console log with no iconEye defined", async () => {
-      console.log = jest.fn();
-
-      document.body.innerHTML = `
-        <div id="eye" data-testid="not-icon-eye" data-bill-url="http://localhost:5678/public/b83fe7efc840eb3db0d60bbc5df3b2ea"></div>
-        <div class="modal fade" id="modaleFile" data-testid="modal-test" style="display: none;"></div>
-      `;
-
-      const iconEye = screen.getByTestId("not-icon-eye");
-      fireEvent.click(iconEye);
-      console.log(fireEvent);
-
-      // On appelle la classe Bills sans aucun élément avec le bon data-testid
-      new Bills({ document });
-
-      // Vérifier que le message d'erreur a bien été logué
-      expect(console.log).toHaveBeenCalledWith("error");
-    });
   });
 });

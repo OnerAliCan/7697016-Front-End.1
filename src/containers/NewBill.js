@@ -32,12 +32,10 @@ export default class NewBill {
     const fileNameExtension = fileName.split(".").pop().toLowerCase();
     const validExtensions = ["jpeg", "jpg", "png"];
     if (!validExtensions.includes(fileNameExtension)) {
-      console.log("Extension de fichier non valide :", fileNameExtension);
       alert("Veuillez télécharger un fichier avec une extension valide (jpeg, jpg, png).");
       this.document.querySelector(`input[data-testid="file"]`).value = "";
       return;
     } else {
-      console.log("extension de fichier valide :", fileNameExtension);
 
       this.store
         .bills()
@@ -57,7 +55,6 @@ export default class NewBill {
   };
   handleSubmit = e => {
     e.preventDefault();
-    console.log("handleSubmit");
 
     const email = JSON.parse(localStorage.getItem("user")).email;
     const bill = {
