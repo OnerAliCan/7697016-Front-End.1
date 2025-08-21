@@ -13,8 +13,8 @@ import Bills from "../containers/Bills.js";
 import mockedBills from "../__mocks__/store.js";
 import "@testing-library/jest-dom";
 import $ from "jquery";
+import { formatDate } from "../app/format.js";
 
-// import { render, fireEvent, screen } from "@testing-library/react";
 
 jest.mock("../app/store", () => mockStore);
 
@@ -47,7 +47,6 @@ describe("Given I am connected as an employee", () => {
         .map(a => a.innerHTML);
       bills.sort();
       dates.map(a => new Date(a));
-
       const antiChrono = (a, b) => new Date(a.date) - new Date(b.date);
       const datesSorted = [...dates].sort(antiChrono);
       expect(dates).toEqual(datesSorted);
@@ -71,7 +70,6 @@ describe("Given I am connected as an employee", () => {
 
       expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH["NewBill"]);
     });
-
     test("Modal should appear by clicking on the eye icon", async () => {
       $.fn.modal = jest.fn();
 
@@ -90,6 +88,45 @@ describe("Given I am connected as an employee", () => {
         expect(spyOn).toHaveBeenCalled();
         expect($.fn.modal).toHaveBeenCalledWith("show"); // Vérifie si la méthode modal a été appelée
       });
+    });
+
+    test("Then it should display the bills page content", async () => {
+      // Given
+      Object.defineProperty(window, "localStorage", { value: localStorageMock });
+      window.localStorage.setItem(
+        "user",
+        JSON.stringify({ type: "Employee", email: "a@a" })
+      );
+
+      const root = document.createElement("div");
+      root.setAttribute("id", "root");
+      document.body.appendChild(root);
+      router();
+
+      // When
+      window.onNavigate(ROUTES_PATH.Bills);
+
+      // Then : titre
+      await waitFor(() => screen.getByText("Mes notes de frais"));
+      expect(screen.getByText("Mes notes de frais")).toBeInTheDocument();
+
+      // Then : au moins une facture
+      const billsRows = screen.getAllByTestId(/bill-/);
+      expect(billsRows.length).toBeGreaterThan(0);
+
+      // Then : vérifier les infos d'une facture du fixture
+      const one = bills[0];
+
+      // le nom (non formaté)
+      expect(screen.getAllByText(one.name).length).toBeGreaterThan(0);
+
+      // la date formatée par l’app
+      const formatted = formatDate(one.date);
+      expect(screen.getAllByText(formatted).length).toBeGreaterThan(0);
+
+      // le montant (gérer l’éventuelle espace fine avant €)
+      const amountRe = new RegExp(`^${one.amount}\\s?€$`);
+      expect(screen.getByText(amountRe)).toBeInTheDocument();
     });
   });
 });

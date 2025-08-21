@@ -13,14 +13,11 @@ export default class {
     if (buttonNewBill) buttonNewBill.addEventListener("click", this.handleClickNewBill);
     const iconEye = document.querySelectorAll(`div[data-testid="icon-eye"]`);
 
-    if (iconEye.length > 0)
-      iconEye.forEach(icon => {
-
-        icon.addEventListener("click", () => this.handleClickIconEye(icon));
-      });
-    else {
-      console.log("error");
-    }
+    const iconEyes = this.document.querySelectorAll(`div[data-testid="icon-eye"]`);
+    iconEyes.forEach(icon => {
+      icon.addEventListener("click", () => this.handleClickIconEye(icon));
+    });
+    
 
     new Logout({ document, localStorage, onNavigate });
   }

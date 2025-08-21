@@ -12,6 +12,8 @@ import { ROUTES_PATH } from "../constants/routes.js";
 import mockStore from "../__mocks__/store";
 import $ from "jquery";
 
+let newBill
+
 describe("Given I am connected as an employee", () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -38,9 +40,6 @@ describe("Given I am connected as an employee", () => {
       expect(windowIcon.classList.contains("active-icon")).toBeTruthy();
     });
   });
-
-
-
 
   describe("When I am on NewBill Page and upload a file with .jpg, .jpeg or .png extension", () => {
     test("should call handleChangeFile with the correct file path", async () => {
@@ -267,4 +266,59 @@ describe("Given I am connected as an employee", () => {
       expect(global.alert).not.toHaveBeenCalled();
     });
   });
+});
+
+
+
+describe("Given I am connected as an employee", () => {
+  beforeEach(() => {
+    Object.defineProperty(window, "localStorage", { value: localStorageMock });
+    window.localStorage.setItem(
+      "user",
+      JSON.stringify({ type: "Employee", email: "a@a" })
+    );
+
+    const root = document.createElement("div");
+    root.setAttribute("id", "root");
+    document.body.appendChild(root);
+    router();
+  });
+
+  describe("When I am on NewBill Page and submit the form", () => {
+    test("Then submitting the form calls store.bills and navigates to Bills page", async () => {
+      const onNavigateSpy = jest.fn();
+      document.body.innerHTML = NewBillUI();
+  
+      // mock stable: bills() renvoie toujours le même objet
+      const updateMock = jest.fn().mockResolvedValue({});
+      const billsMock = { update: updateMock };
+      const mockStoreWithUpdate = { bills: jest.fn(() => billsMock) };
+  
+      const newBill = new NewBill({
+        document,
+        onNavigate: onNavigateSpy,
+        store: mockStoreWithUpdate,
+        localStorage: localStorageMock,
+      });
+  
+      // Simuler un fichier déjà chargé
+      newBill.fileUrl = "mockFileUrl";
+      newBill.fileName = "mockFile.png";
+  
+      // Spy sur l'instance (pas sur le prototype)
+      const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
+  
+      const form = screen.getByTestId("form-new-bill");
+      const fakeEvent = { preventDefault: jest.fn(), target: form };
+  
+      // Appel direct du handler (le spy verra l’appel)
+      await newBill.handleSubmit(fakeEvent);
+  
+      expect(handleSubmitSpy).toHaveBeenCalled();
+      await waitFor(() => expect(updateMock).toHaveBeenCalled());
+      expect(onNavigateSpy).toHaveBeenCalledWith(ROUTES_PATH.Bills);
+    });
+  });
+  
+  
 });
