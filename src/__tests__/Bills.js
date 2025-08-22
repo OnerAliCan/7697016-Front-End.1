@@ -85,7 +85,7 @@ describe("Given I am connected as an employee", () => {
 
       await waitFor(() => {
         expect(spyOn).toHaveBeenCalled();
-         // Vérifie si la méthode modal a été appelée
+         // S'attend à ce que la méthode modal soit appelée
         expect($.fn.modal).toHaveBeenCalledWith("show");
       });
     });
@@ -115,7 +115,7 @@ describe("Given I am connected as an employee", () => {
         await waitFor(() => screen.getByText("Mes notes de frais"));
         expect(screen.getByText("Mes notes de frais")).toBeInTheDocument();
     
-        // Vérification qu’au moins une facture est affichée via le GET mock
+        // S'attend à ce qu’au moins une facture soit affichée via le GET mock
         const billsRows = screen.getAllByTestId(/bill-/);
         expect(billsRows.length).toBeGreaterThan(0);
     

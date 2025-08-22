@@ -35,7 +35,6 @@ describe("Given I am connected as an employee", () => {
       window.onNavigate(ROUTES_PATH.NewBill);
       await waitFor(() => screen.getByTestId("icon-mail"));
       const windowIcon = screen.getByTestId("icon-mail");
-      //to-do write expect expression
       expect(windowIcon.classList.contains("active-icon")).toBeTruthy();
     });
   });
