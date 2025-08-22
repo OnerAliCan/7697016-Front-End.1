@@ -48,15 +48,11 @@ export default class {
             try {
               let result = {
                 ...doc,
-                // date: doc.date,
-                // date: formatDate(doc.date),
+
 
                 status: formatStatus(doc.status),
               };
 
-              // result = {
-              //   date: sortedDates,
-              // };
 
               return result;
             } catch (e) {

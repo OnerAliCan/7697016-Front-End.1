@@ -37,7 +37,6 @@ describe("Given I am connected as an employee", () => {
       window.onNavigate(ROUTES_PATH.Bills);
       await waitFor(() => screen.getByTestId("icon-window"));
       const windowIcon = screen.getByTestId("icon-window");
-      //to-do write expect expression
       expect(windowIcon.classList.contains("active-icon")).toBeTruthy();
     });
     test("Then bills should be ordered from earliest to latest", () => {
@@ -86,47 +85,75 @@ describe("Given I am connected as an employee", () => {
 
       await waitFor(() => {
         expect(spyOn).toHaveBeenCalled();
-        expect($.fn.modal).toHaveBeenCalledWith("show"); // Vérifie si la méthode modal a été appelée
+         // Vérifie si la méthode modal a été appelée
+        expect($.fn.modal).toHaveBeenCalledWith("show");
       });
     });
 
-    test("Then it should display the bills page content", async () => {
-      // Given
-      Object.defineProperty(window, "localStorage", { value: localStorageMock });
-      window.localStorage.setItem(
-        "user",
-        JSON.stringify({ type: "Employee", email: "a@a" })
-      );
-
-      const root = document.createElement("div");
-      root.setAttribute("id", "root");
-      document.body.appendChild(root);
-      router();
-
-      // When
-      window.onNavigate(ROUTES_PATH.Bills);
-
-      // Then : titre
-      await waitFor(() => screen.getByText("Mes notes de frais"));
-      expect(screen.getByText("Mes notes de frais")).toBeInTheDocument();
-
-      // Then : au moins une facture
-      const billsRows = screen.getAllByTestId(/bill-/);
-      expect(billsRows.length).toBeGreaterThan(0);
-
-      // Then : vérifier les infos d'une facture du fixture
-      const one = bills[0];
-
-      // le nom (non formaté)
-      expect(screen.getAllByText(one.name).length).toBeGreaterThan(0);
-
-      // la date formatée par l’app
-      const formatted = formatDate(one.date);
-      expect(screen.getAllByText(formatted).length).toBeGreaterThan(0);
-
-      // le montant (gérer l’éventuelle espace fine avant €)
-      const amountRe = new RegExp(`^${one.amount}\\s?€$`);
-      expect(screen.getByText(amountRe)).toBeInTheDocument();
+    describe("Bills Page for Employee - GET API", () => {
+      beforeEach(() => {
+        Object.defineProperty(window, "localStorage", { value: localStorageMock });
+        window.localStorage.setItem(
+          "user",
+          JSON.stringify({ type: "Employee", email: "a@a" })
+        );
+    
+        const root = document.createElement("div");
+        root.setAttribute("id", "root");
+        document.body.appendChild(root);
+        router();
+      });
+    
+      test("fetches bills from mock API GET and displays them", async () => {
+        // Mock du GET API
+        jest.spyOn(mockStore, "bills");
+    
+        // Navigation vers Bills
+        window.onNavigate(ROUTES_PATH.Bills);
+    
+        // On attend que le titre soit affiché
+        await waitFor(() => screen.getByText("Mes notes de frais"));
+        expect(screen.getByText("Mes notes de frais")).toBeInTheDocument();
+    
+        // Vérification qu’au moins une facture est affichée via le GET mock
+        const billsRows = screen.getAllByTestId(/bill-/);
+        expect(billsRows.length).toBeGreaterThan(0);
+    
+        // Vérification des informations de la première facture
+        const firstBill = await mockStore.bills().list().then(res => res[0]);
+    
+        expect(screen.getAllByText(firstBill.name).length).toBeGreaterThan(0);
+    
+        const formattedDate = formatDate(firstBill.date);
+        expect(screen.getAllByText(formattedDate).length).toBeGreaterThan(0);
+    
+        const amountRe = new RegExp(`^${firstBill.amount}\\s?€$`);
+        expect(screen.getByText(amountRe)).toBeInTheDocument();
+      });
+    
+      describe("When an error occurs on API", () => {
+        test("Then it should display 404 error message", async () => {
+          mockStore.bills.mockImplementationOnce(() => ({
+            list: () => Promise.reject(new Error("Erreur 404")),
+          }));
+    
+          window.onNavigate(ROUTES_PATH.Bills);
+          await new Promise(process.nextTick);
+    
+          expect(screen.getByText(/Erreur 404/)).toBeTruthy();
+        });
+    
+        test("Then it should display 500 error message", async () => {
+          mockStore.bills.mockImplementationOnce(() => ({
+            list: () => Promise.reject(new Error("Erreur 500")),
+          }));
+    
+          window.onNavigate(ROUTES_PATH.Bills);
+          await new Promise(process.nextTick);
+    
+          expect(screen.getByText(/Erreur 500/)).toBeTruthy();
+        });
+      });
     });
   });
 });

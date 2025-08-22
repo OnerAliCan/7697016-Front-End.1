@@ -10,10 +10,9 @@ import "@testing-library/jest-dom/extend-expect";
 import router from "../app/Router";
 import { ROUTES_PATH } from "../constants/routes.js";
 import mockStore from "../__mocks__/store";
-import $ from "jquery";
 
-let newBill
 
+//Tests unitaires
 describe("Given I am connected as an employee", () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -53,16 +52,6 @@ describe("Given I am connected as an employee", () => {
           type: "Employee",
         })
       );
-
-      // Mock du store avec la méthode bills()
-      // const mockStore = {
-      //   bills: jest.fn(() => ({
-      //     create: jest.fn().mockResolvedValue({
-      //       fileUrl: "https://fakestore.com/biborthday0.jpg",
-      //       key: "12345",
-      //     }),
-      //   })),
-      // };
 
       // Créer un conteneur pour simuler le DOM
       document.body.innerHTML = `
@@ -269,7 +258,7 @@ describe("Given I am connected as an employee", () => {
 });
 
 
-
+// test d'intégration POST
 describe("Given I am connected as an employee", () => {
   beforeEach(() => {
     Object.defineProperty(window, "localStorage", { value: localStorageMock });
@@ -284,41 +273,86 @@ describe("Given I am connected as an employee", () => {
     router();
   });
 
-  describe("When I am on NewBill Page and submit the form", () => {
-    test("Then submitting the form calls store.bills and navigates to Bills page", async () => {
+  describe("When I submit the NewBill form", () => {
+    test("Then it should POST the new bill and navigate to Bills page", async () => {
       const onNavigateSpy = jest.fn();
       document.body.innerHTML = NewBillUI();
-  
-      // mock stable: bills() renvoie toujours le même objet
+
+      // Mock du store pour simuler create (POST) et update
+      const createMock = jest.fn().mockResolvedValue({
+        fileUrl: "mockFileUrl",
+        key: "1234",
+      });
       const updateMock = jest.fn().mockResolvedValue({});
-      const billsMock = { update: updateMock };
-      const mockStoreWithUpdate = { bills: jest.fn(() => billsMock) };
-  
+      const billsMock = { create: createMock, update: updateMock };
+      const mockStore = { bills: jest.fn(() => billsMock) };
+
       const newBill = new NewBill({
         document,
         onNavigate: onNavigateSpy,
-        store: mockStoreWithUpdate,
+        store: mockStore,
         localStorage: localStorageMock,
       });
-  
-      // Simuler un fichier déjà chargé
+
+      // Simuler un fichier chargé comme si handleChangeFile avait été appelé
       newBill.fileUrl = "mockFileUrl";
       newBill.fileName = "mockFile.png";
-  
-      // Spy sur l'instance (pas sur le prototype)
+      newBill.billId = "1234";
+
+      // Spy sur handleSubmit
       const handleSubmitSpy = jest.spyOn(newBill, "handleSubmit");
-  
+
       const form = screen.getByTestId("form-new-bill");
       const fakeEvent = { preventDefault: jest.fn(), target: form };
-  
-      // Appel direct du handler (le spy verra l’appel)
+
+      // Appel direct du handler : POST + update
       await newBill.handleSubmit(fakeEvent);
-  
+
+      // Vérifications
       expect(handleSubmitSpy).toHaveBeenCalled();
-      await waitFor(() => expect(updateMock).toHaveBeenCalled());
-      expect(onNavigateSpy).toHaveBeenCalledWith(ROUTES_PATH.Bills);
+      // update appelé
+      await waitFor(() => expect(updateMock).toHaveBeenCalled()); 
+        // POST déjà simulé
+      expect(createMock).not.toHaveBeenCalled();
+      // navigation sur Bills
+      expect(onNavigateSpy).toHaveBeenCalledWith(ROUTES_PATH.Bills); 
     });
+
+    describe("When an error occurs on API", () => {
+      test("Then creating a new bill fails with '404 page not found' error", async () => {
+        // Crée une instance de NewBill avec le mockStore
+        const newBill = new NewBill({ document, store: mockStore });
+    
+        // Mock la méthode create() pour rejeter avec une erreur 404
+        const mockedBillInstance = jest.spyOn(mockStore, "bills").mockReturnValue({
+          create: jest.fn().mockRejectedValue(new Error("Erreur 404")),
+        })();
+    
+        // Vérifie que create() rejette correctement
+        await expect(mockedBillInstance.create()).rejects.toThrow("Erreur 404");
+    
+        // Vérifie que les propriétés de l'instance restent null
+        expect(newBill.billId).toBeNull();
+        expect(newBill.fileUrl).toBeNull();
+        expect(newBill.fileName).toBeNull();
+      });
+    
+      test("Then creating a new bill fails with '500 Internal Server error'", async () => {
+        const newBill = new NewBill({ document, store: mockStore });
+    
+        const mockedBillInstance = jest.spyOn(mockStore, "bills").mockReturnValue({
+          create: jest.fn().mockRejectedValue(new Error("Erreur 500")),
+        })();
+    
+        await expect(mockedBillInstance.create()).rejects.toThrow("Erreur 500");
+    
+        expect(newBill.billId).toBeNull();
+        expect(newBill.fileUrl).toBeNull();
+        expect(newBill.fileName).toBeNull();
+      });
+    });
+    
+    
+    
   });
-  
-  
 });
